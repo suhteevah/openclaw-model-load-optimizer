@@ -6,3 +6,10 @@ dist/
 .playwright-mcp/
 nul
 .DS_Store
+
+# Added by uploader (secret-leak hardening, 2026-04-18)
+.env
+.secrets
+VOXCLAW.md
+scratch/
+*.local
