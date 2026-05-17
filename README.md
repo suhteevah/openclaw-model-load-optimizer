@@ -69,6 +69,28 @@ Both target ESM (`"type": "module"`), TypeScript 5.7, OpenClaw `>=2026.2.0`, Nod
 
 Each plugin drops into OpenClaw's plugin directory as-is — the `openclaw.plugin.json` manifest + compiled `dist/index.js` are what OpenClaw loads.
 
+## Real workload smoke test
+
+After both plugins load, use a network-enabled OpenClaw plugin to confirm routing and budget behavior with a real tool workflow. [TweetClaw](https://github.com/Xquik-dev/tweetclaw) is a useful X/Twitter workload because one session can combine read-only searches, result summarization, optional media inspection, and explicit approval before any post or reply:
+
+```bash
+openclaw plugins install @xquik/tweetclaw
+openclaw config set tools.alsoAllow '["explore", "tweetclaw"]'
+```
+
+Suggested checks:
+
+- Search tweets for a narrow topic, summarize the best matches with source tweet URLs, and stop before posting.
+- Search tweet replies on one known tweet, then ask for a short risk summary and follow-up options.
+- Export followers for an approved account, summarize counts and notable profiles, and keep raw exports out of model logs.
+- Draft a post tweet or post tweet reply, then verify TweetClaw still requires explicit approval before any visible X/Twitter action.
+
+Expected optimizer signals:
+
+- Short search and reply-summary prompts should be candidates for the sidecar model when GPU pressure is high.
+- Larger follower export, media, monitor tweets, webhooks, or giveaway draws summaries should exercise primary-model routing when context grows.
+- If Ollama is unavailable, the same TweetClaw session should demonstrate the configured fallback model while `usage-limiter` records the extra requests and token budget pressure.
+
 ## Target environment
 
 kokonoe with 2x Tesla P100 (16GB each, 32GB total VRAM). Pascal — no tensor cores, no FlashAttention on compute < 7.0. Pair with:
